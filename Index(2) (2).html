@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Coding Practice Portal</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { --primary:#4f46e5; --dark:#172033; --muted:#64748b; --line:#e2e8f0; }
+    body { margin:0; font-family:Arial,Helvetica,sans-serif; background:#f1f5f9; color:var(--dark); }
+    header { padding:24px clamp(16px,4vw,44px); color:white; background:linear-gradient(120deg,#312e81,#4f46e5,#7c3aed); }
+    header h1 { margin:0; font-size:clamp(23px,3vw,32px); }
+    header p { margin:8px 0 0; color:#e0e7ff; }
+    main { max-width:1200px; margin:24px auto; padding:0 16px; }
+    .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    .stat,.card { background:white; border:1px solid var(--line); border-radius:14px; box-shadow:0 4px 14px #0f172a0b; }
+    .stat { padding:16px; } .stat small { color:var(--muted); } .stat strong { display:block; margin-top:6px; font-size:24px; }
+    .layout { display:grid; grid-template-columns:290px minmax(0,1fr); gap:18px; align-items:start; }
+    .card-title { padding:18px; border-bottom:1px solid var(--line); }
+    .card-title h2 { margin:0; font-size:18px; }
+    input,select,button { font:inherit; }
+    #search { width:100%; margin-top:13px; padding:11px; border:1px solid var(--line); border-radius:8px; }
+    .problem-list { padding:8px; max-height:580px; overflow:auto; }
+    .problem { display:block; width:100%; text-align:left; padding:13px; margin:3px 0; border:1px solid transparent; border-radius:9px; background:white; cursor:pointer; color:var(--dark); }
+    .problem:hover { background:#f8fafc; } .problem.active { background:#eef2ff; border-color:#c7d2fe; }
+    .problem strong { display:block; margin-bottom:7px; font-size:14px; }
+    .meta { display:flex; justify-content:space-between; gap:8px; color:var(--muted); font-size:12px; }
+    .tag { padding:3px 7px; border-radius:5px; background:#f1f5f9; } .easy { color:#166534; background:#dcfce7; } .medium { color:#92400e; background:#fef3c7; }
+    .details { padding:20px; } .eyebrow { color:var(--primary); font-size:11px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; }
+    .details h2 { margin:8px 0; font-size:24px; } .details p { line-height:1.6; color:#475569; }
+    .section-title { margin:15px 0 7px; font-size:13px; font-weight:bold; }
+    .sample { padding:12px; white-space:pre-wrap; border:1px solid var(--line); border-radius:8px; background:#f8fafc; font:13px/1.5 Consolas,monospace; }
+    .editor-head,.actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:13px 16px; border-top:1px solid var(--line); background:#f8fafc; }
+    select { padding:8px; border:1px solid var(--line); border-radius:7px; background:white; }
+    #code { display:block; width:100%; min-height:260px; padding:17px; resize:vertical; border:0; outline:none; background:#111827; color:#e5e7eb; font:14px/1.6 Consolas,monospace; }
+    button.action { padding:9px 13px; border:1px solid var(--line); border-radius:8px; background:white; cursor:pointer; font-weight:bold; }
+    button.primary { background:var(--primary); color:white; border-color:var(--primary); }
+    .output { padding:16px; background:#0b1220; color:#a7f3d0; border-top:1px solid #263248; }
+    .output-head { display:flex; justify-content:space-between; gap:10px; margin-bottom:10px; color:white; font-size:13px; font-weight:bold; }
+    #result { min-height:60px; white-space:pre-wrap; overflow-wrap:anywhere; font:13px/1.6 Consolas,monospace; }
+    #hint { margin-bottom:0; font-size:13px; }
+    footer { text-align:center; padding:22px 12px; color:var(--muted); font-size:12px; }
+    @media(max-width:780px) { .layout { grid-template-columns:1fr; } .stats { grid-template-columns:1fr; } .problem-list { max-height:260px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⌘ Online Coding Practice Portal</h1>
+    <p>CLC Polytechnic · Third Year Practical 5</p>
+  </header>
+  <main>
+    <section class="stats">
+      <div class="stat"><small>Total Problems</small><strong id="total">6</strong></div>
+      <div class="stat"><small>Problems Attempted</small><strong id="attempted">0</strong></div>
+      <div class="stat"><small>Status</small><strong style="color:#15803d">Ready</strong></div>
+    </section>
+    <div class="layout">
+      <aside class="card">
+        <div class="card-title">
+          <h2>Problem Library</h2>
+          <input id="search" type="search" placeholder="Search problems..." aria-label="Search problems">
+        </div>
+        <div class="problem-list" id="problemList"></div>
+      </aside>
+      <section class="card">
+        <div class="details">
+          <div class="eyebrow" id="category">Basics · Easy</div>
+          <h2 id="title">Hello, World!</h2>
+          <p id="description">Print Hello, World! to the console.</p>
+          <div class="section-title">Sample Input</div><div class="sample" id="sampleInput">No input</div>
+          <div class="section-title">Expected Output</div><div class="sample" id="sampleOutput">Hello, World!</div>
+          <p id="hint">Select a problem and write your solution in the editor below.</p>
+        </div>
+        <div class="editor-head">
+          <strong>Code Editor</strong>
+          <label for="language">Language:
+            <select id="language">
+              <option value="javascript">JavaScript</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+            </select>
+          </label>
+        </div>
+        <textarea id="code" spellcheck="false" aria-label="Code editor">console.log("Hello, World!");</textarea>
+        <div class="actions">
+          <button class="action primary" id="run">▶ Run Code</button>
+          <button class="action" id="reset">Reset Code</button>
+          <button class="action" id="showHint">Show Hint</button>
+        </div>
+        <div class="output">
+          <div class="output-head"><span>Console Output</span><span id="status">Waiting</span></div>
+          <div id="result">Click Run Code to execute your JavaScript.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer>Online Coding Practice Portal · Made with HTML, CSS and JavaScript in one file</footer>
+<script>
+(function () {
+  "use strict";
+  const problems = [
+    {id:1,title:"Hello, World!",level:"Easy",category:"Basics",description:"Write a program that prints Hello, World! to the console.",input:"No input",output:"Hello, World!",hint:'Use console.log("Hello, World!");',code:'console.log("Hello, World!");'},
+    {id:2,title:"Add Two Numbers",level:"Easy",category:"Operators",description:"Create two variables, add their values, and print the sum of 12 and 8.",input:"12 8",output:"20",hint:"Store the numbers in variables and print a + b.",code:"let a = 12;\\nlet b = 8;\\nconsole.log(a + b);"},
+    {id:3,title:"Even or Odd",level:"Easy",category:"Conditionals",description:"Check whether 17 is even or odd. Print only Even or Odd.",input:"17",output:"Odd",hint:"Use the remainder operator (%).",code:'let n = 17;\\nconsole.log(n % 2 === 0 ? "Even" : "Odd");'},
+    {id:4,title:"Factorial",level:"Medium",category:"Loops",description:"Calculate the factorial of 5 (1 × 2 × 3 × 4 × 5).",input:"5",output:"120",hint:"Start result at 1 and multiply by each integer from 1 through n.",code:"let n = 5;\\nlet result = 1;\\nfor (let i = 1; i <= n; i++) { result *= i; }\\nconsole.log(result);"},
+    {id:5,title:"Reverse a String",level:"Medium",category:"Strings",description:'Reverse the string "coding" and print the result.',input:"coding",output:"gnidoc",hint:"Use split, reverse, and join.",code:'let word = "coding";\\nconsole.log(word.split("").reverse().join(""));'},
+    {id:6,title:"Find Largest Number",level:"Easy",category:"Arrays",description:"Find the largest number in [14, 7, 29, 3, 18].",input:"14 7 29 3 18",output:"29",hint:"Try Math.max(...numbers).",code:"let numbers = [14, 7, 29, 3, 18];\\nconsole.log(Math.max(...numbers));"}
+  ];
+  const byId = id => document.getElementById(id);
+  let current = problems[0];
+  const attempted = new Set();
+
+  function renderList(filter) {
+    const list = byId("problemList");
+    list.textContent = "";
+    const matches = problems.filter(p => (p.title + " " + p.category + " " + p.level).toLowerCase().includes(filter.toLowerCase()));
+    if (!matches.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "No matching problems found.";
+      empty.style.padding = "12px";
+      list.appendChild(empty);
+      return;
+    }
+    matches.forEach(p => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "problem" + (p.id === current.id ? " active" : "");
+      const name = document.createElement("strong");
+      name.textContent = p.id + ". " + p.title;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const category = document.createElement("span");
+      category.textContent = p.category;
+      const level = document.createElement("span");
+      level.className = "tag " + p.level.toLowerCase();
+      level.textContent = p.level;
+      meta.append(category, level);
+      button.append(name, meta);
+      button.addEventListener("click", () => selectProblem(p));
+      list.appendChild(button);
+    });
+  }
+
+  function selectProblem(p) {
+    current = p;
+    byId("category").textContent = p.category + " · " + p.level;
+    byId("title").textContent = p.title;
+    byId("description").textContent = p.description;
+    byId("sampleInput").textContent = p.input;
+    byId("sampleOutput").textContent = p.output;
+    byId("hint").textContent = "Select Show Hint if you need help.";
+    byId("language").value = "javascript";
+    byId("code").value = p.code.replace(/\\n/g, "\n");
+    byId("result").textContent = "Click Run Code to execute your JavaScript.";
+    byId("status").textContent = "Waiting";
+    renderList(byId("search").value);
+  }
+
+  byId("search").addEventListener("input", event => renderList(event.target.value));
+  byId("run").addEventListener("click", () => {
+    attempted.add(current.id);
+    byId("attempted").textContent = String(attempted.size);
+    const language = byId("language").value;
+    const source = byId("code").value;
+    if (language !== "javascript") {
+      byId("result").textContent = language === "html"
+        ? "HTML selected. Save your HTML code as a .html file and open it in a browser to preview the page."
+        : "CSS selected. CSS styles HTML elements; select JavaScript to run code in this console.";
+      byId("status").textContent = "Language selected";
+      return;
+    }
+    const messages = [];
+    const consoleProxy = {
+      log: (...args) => messages.push(args.map(value => {
+        if (typeof value === "string") return value;
+        try { return JSON.stringify(value); } catch (_) { return String(value); }
+      }).join(" ")),
+      error: (...args) => messages.push("Error: " + args.map(String).join(" ")),
+      warn: (...args) => messages.push("Warning: " + args.map(String).join(" "))
+    };
+    try {
+      new Function("console", '"use strict";\n' + source)(consoleProxy);
+      byId("result").textContent = messages.length ? messages.join("\n") : "Program finished with no console output.";
+      byId("status").textContent = "Executed";
+    } catch (error) {
+      byId("result").textContent = error.name + ": " + error.message;
+      byId("status").textContent = "Error";
+    }
+  });
+  byId("reset").addEventListener("click", () => {
+    byId("code").value = current.code.replace(/\\n/g, "\n");
+    byId("result").textContent = "Code reset to the starter example.";
+    byId("status").textContent = "Reset";
+  });
+  byId("showHint").addEventListener("click", () => {
+    byId("hint").textContent = "Hint: " + current.hint;
+  });
+  byId("language").addEventListener("change", event => {
+    if (event.target.value === "javascript") {
+      byId("code").value = current.code.replace(/\\n/g, "\n");
+    } else if (event.target.value === "html") {
+      byId("code").value = '<!DOCTYPE html>\n<html>\n<body>\n  <h1>Hello, Coding!</h1>\n</body>\n</html>';
+    } else {
+      byId("code").value = 'body {\n  font-family: Arial, sans-serif;\n  background: #f1f5f9;\n}';
+    }
+  });
+  byId("total").textContent = String(problems.length);
+  selectProblem(problems[0]);
+})();
+</script>
+</body>
+</html>
